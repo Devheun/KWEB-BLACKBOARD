@@ -13,7 +13,8 @@ export const OrmConfig = {
   migrationsTableName: "migrations",
   migrations: ["./src/migrations/*.ts"],
   cli: {
-    migrationsDir: "migrations",
+    entitiesDir: __dirname + "/**/*.entity.{ts,js}",
+    migrationsDir: "src/migrations",
   },
 };
 export default OrmConfig;

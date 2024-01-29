@@ -15,6 +15,7 @@ export const authenticateProfessor = async (
     }
 
     const decoded = jwt.verify(token, process.env.secretKey) as { id: number };
+    console.log(decoded);
     const userRepository = AppDataSource.getRepository(User);
     const checkProf = await userRepository.findOne({
       where: { isProfessor: true, id: decoded.id },
@@ -27,7 +28,7 @@ export const authenticateProfessor = async (
     req.user = { id: decoded.id }; // 프론트엔드에서 사용자 정보를 활용하려면 req.user에 저장
     next();
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
     return res.status(401).json({ message: "Unauthorized" });
   }
 };
@@ -56,7 +57,7 @@ export const authenticateStudent = async (
     req.user = { id: decoded.id }; // 프론트엔드에서 사용자 정보를 활용하려면 req.user에 저장
     next();
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
     return res.status(401).json({ message: "Unauthorized" });
   }
 };
@@ -85,7 +86,7 @@ export const authenticateIdentity = async (
     req.user = { id: decoded.id }; // 프론트엔드에서 사용자 정보를 활용하려면 req.user에 저장
     next();
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
     return res.status(401).json({ message: "Unauthorized" });
   }
 };

@@ -64,7 +64,7 @@ export class UserController {
             if (loginError) return res.send(loginError);
 
             // access token 생성
-            const accessToken = jwt.sign(
+            const token = jwt.sign(
               {
                 id: authenticatedUser.id,
                 username: authenticatedUser.username,
@@ -74,11 +74,13 @@ export class UserController {
               { expiresIn: "1h" }
             );
 
-            // refresh token 생성
-            const refreshToken = jwt.sign({},process.env.refreshKey, { expiresIn: "14d" });
-
             const { name, studentNumber, isProfessor } = authenticatedUser;
-            return res.json({ accessToken, refreshToken, name, studentNumber, isProfessor });
+            return res.json({
+              token,
+              name,
+              studentNumber,
+              isProfessor,
+            });
           });
         } catch (err) {
           console.error(err);
