@@ -8,10 +8,15 @@ import dotenv from "dotenv";
 dotenv.config();
 
 
+export const createAccessToken = (object : Object) =>{
+  const accessToken = jwt.sign(object, process.env.secretKey, { expiresIn: "1h" });
+  return accessToken;
+}
+
 // Refresh Token 생성해주기
 export const createRefreshToken = async (user: User): Promise<string> => {
   const refreshToken = jwt.sign({}, process.env.refreshKey, { expiresIn: "14d" });
-
+  console.log(refreshToken);
   const refreshTokenEntity = new RefreshToken();
   refreshTokenEntity.userId = user.id;
   refreshTokenEntity.token = refreshToken;
@@ -34,7 +39,7 @@ export const verifyRefreshToken = async (token: string): Promise<boolean> => {
         where: { token },
       });
 
-      if (existingToken && existingToken.expiryDate > new Date()) {
+      if (existingToken && existingToken.expiryDate > new Date()) { // 만료되었는지 체크
         return true;
       }
     }

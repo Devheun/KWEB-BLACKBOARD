@@ -8,9 +8,9 @@ export class RefreshToken{
   @Column({nullable:false})
   userId : number;
 
-  @Column()
+  @Column({nullable:false})
   token : string;
 
-  @Column()
+  @Column({nullable:false})
   expiryDate : Date;
 }

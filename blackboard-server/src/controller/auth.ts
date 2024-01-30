@@ -5,6 +5,7 @@ import passport from "passport";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
+import { createAccessToken, createRefreshToken } from "../util/token";
 
 dotenv.config();
 
@@ -60,23 +61,24 @@ export class UserController {
               .json({ message: "존재하지 않는 사용자입니다." });
           }
 
-          req.login(authenticatedUser, { session: false }, (loginError) => {
+          req.login(authenticatedUser, { session: false }, async (loginError) => {
             if (loginError) return res.send(loginError);
 
+            const payload = {
+              id: authenticatedUser.id,
+              username: authenticatedUser.username,
+              isProfessor: authenticatedUser.isProfessor,
+            };
+
             // access token 생성
-            const token = jwt.sign(
-              {
-                id: authenticatedUser.id,
-                username: authenticatedUser.username,
-                isProfessor: authenticatedUser.isProfessor,
-              },
-              process.env.secretKey,
-              { expiresIn: "1h" }
-            );
+            const token = createAccessToken(payload);
+            // refresh token 생성
+            const refreshToken = await createRefreshToken(authenticatedUser);
 
             const { name, studentNumber, isProfessor } = authenticatedUser;
             return res.json({
               token,
+              refreshToken,
               name,
               studentNumber,
               isProfessor,
