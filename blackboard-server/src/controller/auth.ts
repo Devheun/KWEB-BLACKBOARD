@@ -72,7 +72,7 @@ export class UserController {
 
             // access token 생성
             const token = createAccessToken(payload);
-            // refresh token 생성
+            // refresh token 생성 (DB에도 저장)
             const refreshToken = await createRefreshToken(authenticatedUser);
 
             const { name, studentNumber, isProfessor } = authenticatedUser;

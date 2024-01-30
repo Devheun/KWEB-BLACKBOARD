@@ -15,8 +15,16 @@ export const createAccessToken = (object : Object) =>{
 
 // Refresh Token 생성해주기
 export const createRefreshToken = async (user: User): Promise<string> => {
+
+  const existingToken = await AppDataSource.getRepository(RefreshToken).findOne({
+    where: { userId: user.id },
+  });
+
+  if (existingToken) {
+    return existingToken.token;
+  }
+
   const refreshToken = jwt.sign({}, process.env.refreshKey, { expiresIn: "14d" });
-  console.log(refreshToken);
   const refreshTokenEntity = new RefreshToken();
   refreshTokenEntity.userId = user.id;
   refreshTokenEntity.token = refreshToken;
@@ -52,29 +60,23 @@ export const verifyRefreshToken = async (token: string): Promise<boolean> => {
 
 
 // Access Token 재발급
-export const refreshAccessToken = async (req: Request, res: Response) => {
-  const { refreshToken } = req.body;
+// header에 token 보내는 식 (client가 보낸 refresh token 검증 후 access token 재발급)
+export const refreshAccessToken = async (refreshToken: string): Promise<string | null> => {
+  try {
+    const isTokenValid = await verifyRefreshToken(refreshToken);
 
-  if (!refreshToken) {
-    return res.status(400).json({ message: "Refresh token is required." });
-  }
+    if (isTokenValid) {
+      const decoded = jwt.verify(refreshToken, process.env.refreshKey) as { userId: number };
+      const userRepository = AppDataSource.getRepository(User);
+      const user = await userRepository.findOne({
+        where: { id: decoded.userId },
+      });
 
-  const isTokenValid = await verifyRefreshToken(refreshToken);
+      if (!user) {
+        throw new Error("User not found");
+      }
 
-  if (isTokenValid) {
-
-    const decoded = jwt.verify(refreshToken, process.env.refreshKey) as { userId: number };
-    const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOne({
-      where: { id: decoded.userId },
-    });
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    // Generate a new access token
-    const newAccessToken = jwt.sign(
+      const newAccessToken = jwt.sign(
         {
           id: user.id,
           username: user.username,
@@ -84,8 +86,12 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
         { expiresIn: "1h" }
       );
 
-    return res.json({ accessToken: newAccessToken });
-  } else {
-    return res.status(401).json({ message: "Invalid or expired refresh token." });
+      return newAccessToken;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error refreshing access token:", error);
+    return null;
   }
 };
