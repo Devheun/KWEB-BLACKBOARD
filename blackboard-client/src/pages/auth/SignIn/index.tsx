@@ -30,7 +30,6 @@ const SignInPage: React.FC = () => {
         token: res.data.token,
         tokenType: "Bearer",
         authState: {
-          refreshToken : res.data.refreshToken,
           studentNumber: res.data.studentNumber,
           name: res.data.name,
           isProfessor: res.data.isProfessor,

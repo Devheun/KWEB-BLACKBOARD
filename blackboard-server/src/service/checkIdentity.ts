@@ -15,7 +15,7 @@ export const authenticateProfessor = async (
     }
 
     const decoded = jwt.verify(token, process.env.secretKey) as { id: number };
-    console.log(decoded);
+    console.log("decoded : ", decoded);
     const userRepository = AppDataSource.getRepository(User);
     const checkProf = await userRepository.findOne({
       where: { isProfessor: true, id: decoded.id },
