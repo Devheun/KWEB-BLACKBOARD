@@ -9,7 +9,7 @@ dotenv.config();
 
 
 export const createAccessToken = (object : Object) =>{
-  const accessToken = jwt.sign(object, process.env.secretKey, { expiresIn: "1h" });
+  const accessToken = jwt.sign(object, process.env.secretKey, { expiresIn: "1m" });
   return accessToken;
 }
 
@@ -41,21 +41,15 @@ export const createRefreshToken = async (user: User): Promise<string> => {
 export const verifyRefreshToken = async (token: string): Promise<boolean> => {
   try {
     const decoded = jwt.verify(token, process.env.refreshKey);
-    if (typeof decoded === "object" && decoded.hasOwnProperty("id")) {
-      const refreshTokenRepository = AppDataSource.getRepository(RefreshToken);
-      const existingToken = await refreshTokenRepository.findOne({
-        where: { token },
-      });
-
-      if (existingToken && existingToken.expiryDate > new Date()) { // 만료되었는지 체크
-        return true;
-      }
-    }
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({
+      where : {id : decoded.userId}
+    });
+    return !!user; // user가 존재하면 true, 존재하지 않으면 false
   } catch (error) {
     console.error("Error verifying refresh token:", error);
+    return false;
   }
-
-  return false;
 };
 
 
@@ -85,9 +79,10 @@ export const refreshAccessToken = async (refreshToken: string): Promise<string |
         process.env.secretKey,
         { expiresIn: "1h" }
       );
-
+      console.log("New Access Token:", newAccessToken);
       return newAccessToken;
     } else {
+      console.log("Refresh token is not valid");
       return null;
     }
   } catch (error) {
