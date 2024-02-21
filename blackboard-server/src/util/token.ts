@@ -25,17 +25,20 @@ export const createRefreshToken = async (user: User): Promise<string> => {
     });
 
     if (existingRefreshToken) {
-      existingRefreshToken.token = jwt.sign({}, process.env.refreshKey, {
-        expiresIn: "14d",
-      });
-      existingRefreshToken.expiryDate = new Date(
-        Date.now() + 14 * 24 * 60 * 60 * 1000
-      ); // 14 days
-      await AppDataSource.getRepository(RefreshToken).save(
-        existingRefreshToken
-      );
+      const verifyResult = await verifyRefreshToken(existingRefreshToken.token); // refresh token 검증
+      if (!verifyResult) { // 토큰이 존재하기는 하는데 유효하지 않은 경우
+        existingRefreshToken.token = jwt.sign({}, process.env.refreshKey, {
+          expiresIn: "14d",
+        });
+        existingRefreshToken.expiryDate = new Date(
+          Date.now() + 14 * 24 * 60 * 60 * 1000
+        ); // 14 days
+        await AppDataSource.getRepository(RefreshToken).save(
+          existingRefreshToken
+        );
 
-      return existingRefreshToken.token;
+        return existingRefreshToken.token;
+      }
     } else {
       const refreshToken = jwt.sign({}, process.env.refreshKey, {
         expiresIn: "14d",
@@ -47,9 +50,7 @@ export const createRefreshToken = async (user: User): Promise<string> => {
         Date.now() + 14 * 24 * 60 * 60 * 1000
       ); // 14 days
 
-      const refreshTokenRepository = AppDataSource.getRepository(RefreshToken);
-      await refreshTokenRepository.save(refreshTokenEntity);
-
+      await AppDataSource.getRepository(RefreshToken).save(refreshTokenEntity);
       return refreshToken;
     }
   } catch (error) {
