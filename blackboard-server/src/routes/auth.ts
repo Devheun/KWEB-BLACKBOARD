@@ -1,19 +1,18 @@
 import * as express from "express";
 import { UserController } from "../controller/auth";
 import { Request, Response } from "express";
-import { refreshAccessToken } from "../util/token";
+import { createRefreshToken, refreshAccessToken } from "../util/token";
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 import dotenv from "dotenv";
 import { access } from "fs";
+import { AppDataSource } from "../data-source";
+import { RefreshToken } from "../entity/Token";
 dotenv.config();
 
 const router = express.Router();
 
 router.post("/sign-up", UserController.sign_up);
 router.post("/sign-in", UserController.sign_in);
-
-// refresh token 검증 후 새로운 access token 발급
-// ...
 
 // refresh token 검증 후 새로운 access token 발급
 router.post("/refresh", async (req: Request, res: Response) => {
