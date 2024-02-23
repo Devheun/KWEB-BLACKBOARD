@@ -9,6 +9,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useSignOut } from "react-auth-kit";
+import { postLogout } from "../../api/auth";
 
 const Header: React.FC = () => {
   const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
@@ -27,7 +28,8 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const signOut = useSignOut();
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await postLogout();
     setLoggedInUser(null);
     navigate("/");
     signOut();

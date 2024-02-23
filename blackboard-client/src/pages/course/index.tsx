@@ -13,6 +13,8 @@ import {
 import { useState, useEffect } from "react";
 import { useSignOut } from "react-auth-kit";
 import { useNavigate, Link } from "react-router-dom";
+import { postLogout } from "../../api/auth";
+import Cookies from 'js-cookie';
 
 
 const CoursePage: React.FC = () => {
@@ -34,7 +36,8 @@ const CoursePage: React.FC = () => {
   const signOut = useSignOut();
   const navigate = useNavigate();
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await postLogout();
     signOut();
     setLoggedInUser(null);
     navigate("/");

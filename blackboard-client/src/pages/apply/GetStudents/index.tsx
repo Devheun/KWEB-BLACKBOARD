@@ -21,6 +21,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { AxiosError } from "axios";
 import { getStudents } from "../../../api/apply";
 import { deleteStudents } from "../../../api/apply";
+import { postLogout } from "../../../api/auth";
 
 const GetProfApplyPage: React.FC = () => {
   const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
@@ -38,7 +39,8 @@ const GetProfApplyPage: React.FC = () => {
   const signOut = useSignOut();
   const navigate = useNavigate();
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await postLogout();
     signOut();
     setLoggedInUser(null);
     navigate("/");

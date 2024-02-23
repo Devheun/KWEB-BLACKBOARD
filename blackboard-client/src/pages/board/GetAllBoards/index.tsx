@@ -20,6 +20,7 @@ import { useSignOut } from "react-auth-kit";
 import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 import { getAllBoards } from "../../../api/board";
+import { postLogout } from "../../../api/auth";
 
 const AllBoardPage: React.FC = () => {
   const [boardData, setBoardData] = useState<any[]>([]);
@@ -37,7 +38,8 @@ const AllBoardPage: React.FC = () => {
   const signOut = useSignOut();
   const navigate = useNavigate();
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await postLogout();
     signOut();
     setLoggedInUser(null);
     navigate("/");

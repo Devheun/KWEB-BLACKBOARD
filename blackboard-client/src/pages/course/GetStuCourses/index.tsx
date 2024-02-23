@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 import { getStuCourses } from "../../../api/course";
 import { Link } from "react-router-dom";
+import { postLogout } from "../../../api/auth";
 
 const GetStuCoursePage: React.FC = () => {
   const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
@@ -38,7 +39,8 @@ const GetStuCoursePage: React.FC = () => {
   const signOut = useSignOut();
   const navigate = useNavigate();
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await postLogout();
     signOut();
     setLoggedInUser(null);
     navigate("/");

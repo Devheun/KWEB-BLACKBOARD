@@ -20,6 +20,7 @@ import { useSignOut } from "react-auth-kit";
 import { useNavigate, useParams } from "react-router-dom";
 import { AxiosError } from "axios";
 import { getBoardList } from "../../../api/board";
+import { postLogout } from "../../../api/auth";
 
 
 const AppliedBoardPage: React.FC = () => {
@@ -39,7 +40,8 @@ const AppliedBoardPage: React.FC = () => {
   const signOut = useSignOut();
   const navigate = useNavigate();
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await postLogout();
     signOut();
     setLoggedInUser(null);
     navigate("/");

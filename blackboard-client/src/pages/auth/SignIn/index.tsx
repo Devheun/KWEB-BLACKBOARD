@@ -26,17 +26,16 @@ const SignInPage: React.FC = () => {
   const handleSignIn = async () => {
     try {
       const res = await postSignIn(signInData);
-      const authData = {
+      signIn({
         token: res.data.token,
+        expiresIn: 3600,
         tokenType: "Bearer",
         authState: {
           studentNumber: res.data.studentNumber,
           name: res.data.name,
           isProfessor: res.data.isProfessor,
         },
-        expiresIn: 60 * 60 * 24 * 1000,
-      };
-      signIn(authData);
+      });
       navigate("/");
     } catch (error) {
       console.error(error);

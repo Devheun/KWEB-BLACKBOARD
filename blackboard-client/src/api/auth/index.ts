@@ -16,3 +16,7 @@ export const postRefreshToken = async (refreshToken: string) => {
   const response = await ApiManager.post("/auth/refresh-token", refreshToken);
   return response.data;
 }
+
+export const postLogout = async () => {
+  await ApiManager.post("/auth/logout");
+}

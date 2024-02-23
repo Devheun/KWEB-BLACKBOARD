@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { AddCourseParams } from "../../../model/course";
 import { AxiosError } from "axios";
 import { postAddCourse } from "../../../api/course";
+import { postLogout } from "../../../api/auth";
 
 const AddCoursePage: React.FC = () => {
   const [addCourseData, setAddCourseData] = useState<AddCourseParams>({
@@ -58,7 +59,8 @@ const AddCoursePage: React.FC = () => {
   const signOut = useSignOut();
   const navigate = useNavigate();
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await postLogout();
     signOut();
     setLoggedInUser(null);
     navigate("/");

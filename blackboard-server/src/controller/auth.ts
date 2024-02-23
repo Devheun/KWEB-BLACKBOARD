@@ -76,6 +76,7 @@ export class UserController {
             const refreshToken = await createRefreshToken(authenticatedUser);
 
             const { name, studentNumber, isProfessor } = authenticatedUser;
+            res.cookie('refreshToken', refreshToken, {httpOnly:true});
             return res.json({
               token,
               refreshToken,
@@ -90,5 +91,10 @@ export class UserController {
         }
       }
     )(req, res, next);
+  }
+
+  static async logout(req : Request, res: Response) {
+    res.clearCookie('refreshToken');
+    res.status(200).json({message: "로그아웃 성공"});
   }
 }

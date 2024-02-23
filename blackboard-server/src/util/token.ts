@@ -9,7 +9,7 @@ dotenv.config();
 
 export const createAccessToken = (object: Object) => {
   const accessToken = jwt.sign(object, process.env.secretKey, {
-    expiresIn: "1m",
+    expiresIn: "15m",
   });
   return accessToken;
 };
@@ -37,8 +37,8 @@ export const createRefreshToken = async (user: User): Promise<string> => {
           existingRefreshToken
         );
 
-        return existingRefreshToken.token;
       }
+      return existingRefreshToken.token;
     } else {
       const refreshToken = jwt.sign({}, process.env.refreshKey, {
         expiresIn: "14d",
@@ -102,7 +102,7 @@ export const refreshAccessToken = async (
           isProfessor: user.isProfessor,
         },
         process.env.secretKey,
-        { expiresIn: "1m" }
+        { expiresIn: "15m" }
       );
       console.log("New Access Token:", newAccessToken);
       return newAccessToken;
