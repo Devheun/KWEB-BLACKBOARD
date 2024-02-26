@@ -20,8 +20,6 @@ router.post("/refresh", async (req: Request, res: Response) => {
   const accessToken = req.header("Authorization")?.replace("Bearer ", "");
   const { refreshToken } = req.body;
 
-  console.log("accessToken:", accessToken);
-  console.log("refreshToken:", refreshToken);
 
   if (!refreshToken || !accessToken) {
     return res.status(400).json({ message: "refresh token not found" });
@@ -36,7 +34,7 @@ router.post("/refresh", async (req: Request, res: Response) => {
         const refreshResult = jwt.verify(refreshToken, process.env.refreshKey);
         // refresh token이 만료되지 않았을 때
         const newAccessToken = await refreshAccessToken(refreshToken);
-        return res.json({ newAccessToken, refreshToken });
+        return res.json({ newAccessToken});
       } catch (error) {
         // refresh token이 만료되었을 때
         if (error.name === "TokenExpiredError") {

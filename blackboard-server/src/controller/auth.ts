@@ -76,10 +76,9 @@ export class UserController {
             const refreshToken = await createRefreshToken(authenticatedUser);
 
             const { name, studentNumber, isProfessor } = authenticatedUser;
-            res.cookie('refreshToken', refreshToken, {httpOnly:true});
+            res.cookie('refreshToken', refreshToken);
             return res.json({
               token,
-              refreshToken,
               name,
               studentNumber,
               isProfessor,

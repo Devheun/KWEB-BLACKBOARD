@@ -82,7 +82,7 @@ const SignUpPage: React.FC = () => {
       />
       <TextField
         name="studentNumber"
-        value={signUpData.studentNumber}
+        value={signUpData.studentNumber ?? ""}
         label="학번"
         onChange={handleChange}
         placeholder="2020320098"

@@ -28,7 +28,7 @@ const SignInPage: React.FC = () => {
       const res = await postSignIn(signInData);
       signIn({
         token: res.data.token,
-        expiresIn: 3600,
+        expiresIn: 15,
         tokenType: "Bearer",
         authState: {
           studentNumber: res.data.studentNumber,

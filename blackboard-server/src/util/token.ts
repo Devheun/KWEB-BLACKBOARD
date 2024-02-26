@@ -95,14 +95,12 @@ export const refreshAccessToken = async (
         throw new Error("User not found");
       }
 
-      const newAccessToken = jwt.sign(
+      const newAccessToken = createAccessToken(
         {
           id: user.id,
           username: user.username,
           isProfessor: user.isProfessor,
         },
-        process.env.secretKey,
-        { expiresIn: "15m" }
       );
       console.log("New Access Token:", newAccessToken);
       return newAccessToken;
