@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import { createAccessToken, createRefreshToken } from "../util/token";
+import { refreshAccessToken } from "../util/token";
 
 dotenv.config();
 
@@ -61,29 +62,33 @@ export class UserController {
               .json({ message: "존재하지 않는 사용자입니다." });
           }
 
-          req.login(authenticatedUser, { session: false }, async (loginError) => {
-            if (loginError) return res.send(loginError);
+          req.login(
+            authenticatedUser,
+            { session: false },
+            async (loginError) => {
+              if (loginError) return res.send(loginError);
 
-            const payload = {
-              id: authenticatedUser.id,
-              username: authenticatedUser.username,
-              isProfessor: authenticatedUser.isProfessor,
-            };
+              const payload = {
+                id: authenticatedUser.id,
+                username: authenticatedUser.username,
+                isProfessor: authenticatedUser.isProfessor,
+              };
 
-            // access token 생성
-            const token = createAccessToken(payload);
-            // refresh token 생성 (DB에도 저장)
-            const refreshToken = await createRefreshToken(authenticatedUser);
+              // access token 생성
+              const token = createAccessToken(payload);
+              // refresh token 생성 (DB에도 저장)
+              const refreshToken = await createRefreshToken(authenticatedUser);
 
-            const { name, studentNumber, isProfessor } = authenticatedUser;
-            res.cookie('refreshToken', refreshToken);
-            return res.json({
-              token,
-              name,
-              studentNumber,
-              isProfessor,
-            });
-          });
+              const { name, studentNumber, isProfessor } = authenticatedUser;
+              res.cookie("refreshToken", refreshToken);
+              return res.json({
+                token,
+                name,
+                studentNumber,
+                isProfessor,
+              });
+            }
+          );
         } catch (err) {
           console.error(err);
           next(err);
@@ -92,8 +97,45 @@ export class UserController {
     )(req, res, next);
   }
 
-  static async logout(req : Request, res: Response) {
-    res.clearCookie('refreshToken');
-    res.status(200).json({message: "로그아웃 성공"});
+  static async logout(req: Request, res: Response) {
+    res.clearCookie("refreshToken");
+    res.status(200).json({ message: "로그아웃 성공" });
+  }
+
+  static async refresh(req: Request, res: Response) {
+    const accessToken = req.header("Authorization")?.replace("Bearer ", "");
+    const { refreshToken } = req.body;
+
+    if (!refreshToken || !accessToken) {
+      return res.status(400).json({ message: "token not found" });
+    }
+
+    // access token 검증 -> expired 여야 refresh 가능
+    try {
+      const accessResult = jwt.verify(accessToken, process.env.secretKey);
+    } catch (error) {
+      if (error.name === "TokenExpiredError") {
+        try {
+          const refreshResult = jwt.verify(
+            refreshToken,
+            process.env.refreshKey
+          );
+          // refresh token이 만료되지 않았을 때
+          const newAccessToken = await refreshAccessToken(refreshToken);
+          return res.json({ newAccessToken });
+        } catch (error) {
+          // refresh token이 만료되었을 때
+          if (error.name === "TokenExpiredError") {
+            return res.status(401).json({ message: "Unauthorized" });
+          } else {
+            console.error("Error verifying refresh token:", error);
+            return res.status(500).json({ message: "Internal Server Error" });
+          }
+        }
+      } else {
+        // 액세스 토큰이 만료되지 않은 경우
+        return res.status(400).json({ message: "Access Token is not expired" });
+      }
+    }
   }
 }

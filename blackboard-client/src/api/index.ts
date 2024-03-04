@@ -2,7 +2,8 @@ import axios from "axios";
 import moment from "moment";
 import Cookies from "js-cookie";
 
-const API_URL = "http://localhost:3000"; // TODO: 환경변수로 변경 (백엔드 주소 입력)
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ApiManager = axios.create({
   baseURL: API_URL,
@@ -32,7 +33,7 @@ ApiManager.interceptors.request.use(async (config) => {
       }).then((response) => {
         const newAccessToken = response.data.newAccessToken;
         localStorage.setItem("_auth", newAccessToken);
-        localStorage.setItem("_auth_storage", moment().add(15, "minute").format("yyyy-MM-DD HH:mm:ss"));
+        localStorage.setItem("_auth_storage", moment().add(1, "minute").format("yyyy-MM-DD HH:mm:ss"));
         isRefreshing = false;
         return newAccessToken;
       }).catch((error) => {
@@ -43,7 +44,14 @@ ApiManager.interceptors.request.use(async (config) => {
     }
 
     // 갱신된 토큰이 설정될 때까지 대기
-    token = await refreshPromise;
+    try {
+      // 갱신된 토큰이 설정될 때까지 대기
+      token = await refreshPromise;
+    } catch (error) {
+      // 토큰 갱신 중 에러가 발생한 경우 처리
+      console.error("Error refreshing token:", error);
+      // 에러를 다시 던지거나 다른 처리를 수행할 수 있음
+    }
   }
 
   // 갱신된 토큰을 사용하여 요청 헤더 설정

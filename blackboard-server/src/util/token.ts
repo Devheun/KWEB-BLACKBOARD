@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import { AppDataSource } from "../data-source";
 import { RefreshToken } from "../entity/Token";
 import { User } from "../entity/User";
-import { Request, Response } from "express";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -27,7 +26,7 @@ export const createRefreshToken = async (user: User): Promise<string> => {
     if (existingRefreshToken) {
       const verifyResult = await verifyRefreshToken(existingRefreshToken.token); // refresh token 검증
       if (!verifyResult) { // 토큰이 존재하기는 하는데 유효하지 않은 경우
-        existingRefreshToken.token = jwt.sign({}, process.env.refreshKey, {
+        existingRefreshToken.token = jwt.sign({userId : user.id}, process.env.refreshKey, {
           expiresIn: "14d",
         });
         existingRefreshToken.expiryDate = new Date(
@@ -40,7 +39,7 @@ export const createRefreshToken = async (user: User): Promise<string> => {
       }
       return existingRefreshToken.token;
     } else {
-      const refreshToken = jwt.sign({}, process.env.refreshKey, {
+      const refreshToken = jwt.sign({userId : user.id}, process.env.refreshKey, {
         expiresIn: "14d",
       });
       const refreshTokenEntity = new RefreshToken();
@@ -83,9 +82,7 @@ export const refreshAccessToken = async (
     const isTokenValid = await verifyRefreshToken(refreshToken);
 
     if (isTokenValid) {
-      const decoded = jwt.verify(refreshToken, process.env.refreshKey) as {
-        userId: number;
-      };
+      const decoded = jwt.verify(refreshToken, process.env.refreshKey);
       const userRepository = AppDataSource.getRepository(User);
       const user = await userRepository.findOne({
         where: { id: decoded.userId },

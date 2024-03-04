@@ -8,22 +8,24 @@ import {
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useSignOut } from "react-auth-kit";
+import { useAuthUser, useSignOut } from "react-auth-kit";
 import { postLogout } from "../../api/auth";
 
 const Header: React.FC = () => {
   const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
-
+  const storedUser = localStorage.getItem("_auth_state");
+  const isAuth = useAuthUser()();
   useEffect(() => {
-    const storedUser = localStorage.getItem("_auth_state");
-    if (!storedUser) {
+    if (!isAuth) {
       setLoggedInUser(null);
     } else {
-      const authState = JSON.parse(storedUser);
+      const authState = isAuth;
       const name = authState && authState.name;
       setLoggedInUser(name);
     }
-  }, []);
+    console.log("loggedInUser 상태값:", loggedInUser);
+  }, [isAuth]);
+  
 
   const navigate = useNavigate();
   const signOut = useSignOut();
@@ -35,7 +37,6 @@ const Header: React.FC = () => {
     signOut();
   };
 
-  const storedUser = localStorage.getItem("_auth_state");
   const checkIsProfessor = storedUser && JSON.parse(storedUser).isProfessor;
 
   return (

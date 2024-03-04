@@ -14,13 +14,12 @@ export const authenticateProfessor = async (
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const decoded = jwt.verify(token, process.env.secretKey) as { id: number };
-    console.log("decoded : ", decoded);
+    const decoded = jwt.verify(token, process.env.secretKey);
     const userRepository = AppDataSource.getRepository(User);
     const checkProf = await userRepository.findOne({
       where: { isProfessor: true, id: decoded.id },
     });
-
+  
     if (!checkProf) {
       return res.status(400).json({ message: "You are not a professor" });
     }
@@ -28,6 +27,9 @@ export const authenticateProfessor = async (
     req.user = { id: decoded.id }; // 프론트엔드에서 사용자 정보를 활용하려면 req.user에 저장
     next();
   } catch (err) {
+    if(err.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token Expired" });
+    }
     console.error(err.message);
     return res.status(401).json({ message: "Unauthorized" });
   }
@@ -57,6 +59,9 @@ export const authenticateStudent = async (
     req.user = { id: decoded.id }; // 프론트엔드에서 사용자 정보를 활용하려면 req.user에 저장
     next();
   } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token expired" });
+    }
     console.error(err.message);
     return res.status(401).json({ message: "Unauthorized" });
   }
@@ -80,12 +85,15 @@ export const authenticateIdentity = async (
     });
 
     if (!checkIdentity) {
-      return res.status(400).json({ message: "You are not a student" });
+      return res.status(400).json({ message: "Access denied!" });
     }
 
     req.user = { id: decoded.id }; // 프론트엔드에서 사용자 정보를 활용하려면 req.user에 저장
     next();
   } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token expired" });
+    }
     console.error(err.message);
     return res.status(401).json({ message: "Unauthorized" });
   }
